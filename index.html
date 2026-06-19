@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Character Ranker</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Segoe UI, sans-serif;
+}
+
+body{
+background:#111827;
+color:white;
+min-height:100vh;
+}
+
+.screen{
+display:flex;
+flex-direction:column;
+align-items:center;
+padding:40px;
+}
+
+.logo{
+font-size:38px;
+font-weight:bold;
+margin-bottom:25px;
+}
+
+.start-btn{
+background:#16a34a;
+border:none;
+padding:15px 50px;
+font-size:22px;
+border-radius:12px;
+cursor:pointer;
+margin-bottom:40px;
+color:white;
+font-weight:bold;
+}
+
+.start-btn:hover{
+background:#15803d;
+}
+
+.shows-grid{
+width:100%;
+max-width:1300px;
+
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:25px;
+}
+
+.show-card{
+background:#1f2937;
+border-radius:18px;
+padding:15px;
+text-align:center;
+transition:.2s;
+}
+
+.show-card:hover{
+transform:translateY(-3px);
+}
+
+.show-image{
+width:100%;
+height:170px;
+object-fit:cover;
+border-radius:12px;
+background:#374151;
+}
+
+.show-name{
+margin-top:10px;
+font-size:18px;
+font-weight:600;
+}
+
+.toggle{
+margin-top:12px;
+
+width:26px;
+height:26px;
+
+border-radius:50%;
+margin-left:auto;
+margin-right:auto;
+
+cursor:pointer;
+}
+
+.on{
+background:#22c55e;
+}
+
+.off{
+background:#ef4444;
+}
+
+@media(max-width:900px){
+
+.shows-grid{
+grid-template-columns:repeat(2,1fr);
+}
+
+}
+
+@media(max-width:600px){
+
+.shows-grid{
+grid-template-columns:1fr;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="screen">
+
+<div class="logo">
+Character Ranker
+</div>
+
+<button class="start-btn" id="startBtn">
+START
+</button>
+
+<div class="shows-grid" id="showsGrid">
+</div>
+
+</div>
+
+<script>
+
+const SHOWS = [
+
+{
+name:"GAME OF THRONES",
+image:"shows/game_of_thrones.jpg"
+},
+
+{
+name:"VIKINGS",
+image:"shows/vikings.jpg"
+},
+
+{
+name:"BREAKING BAD",
+image:"shows/breaking_bad.jpg"
+},
+
+{
+name:"THE SOPRANOS",
+image:"shows/the_sopranos.jpg"
+},
+
+{
+name:"THE WALKING DEAD",
+image:"shows/the_walking_dead.jpg"
+},
+
+{
+name:"DEXTER",
+image:"shows/dexter.jpg"
+},
+
+{
+name:"PEAKY BLINDERS",
+image:"shows/peaky_blinders.jpg"
+},
+
+{
+name:"THE LAST KINGDOM",
+image:"shows/the_last_kingdom.jpg"
+},
+
+{
+name:"THE PENGUIN",
+image:"shows/the_penguin.jpg"
+},
+
+{
+name:"TRUE DETECTIVE",
+image:"shows/true_detective.jpg"
+},
+
+{
+name:"REACHER",
+image:"shows/reacher.jpg"
+},
+
+{
+name:"THE BOYS",
+image:"shows/the_boys.jpg"
+},
+
+{
+name:"FROM",
+image:"shows/from.jpg"
+},
+
+{
+name:"PRISON BREAK",
+image:"shows/prison_break.jpg"
+},
+
+{
+name:"THE PUNISHER",
+image:"shows/the_punisher.jpg"
+},
+
+{
+name:"YOU",
+image:"shows/you.jpg"
+},
+
+{
+name:"HANNIBAL",
+image:"shows/hannibal.jpg"
+},
+
+{
+name:"DAREDEVIL",
+image:"shows/daredevil.jpg"
+},
+
+{
+name:"HOUSE OF THE DRAGON",
+image:"shows/house_of_the_dragon.jpg"
+},
+
+{
+name:"LA CASA DE PAPEL",
+image:"shows/la_casa_de_papel.jpg"
+},
+
+{
+name:"BAND OF BROTHERS",
+image:"shows/band_of_brothers.jpg"
+},
+
+{
+name:"WEDNESDAY",
+image:"shows/wednesday.jpg"
+},
+
+{
+name:"SQUID GAME",
+image:"shows/squid_game.jpg"
+},
+
+{
+name:"A KNIGHT OF THE 7 KINGDOMS",
+image:"shows/a_knight_of_the_7_kingdoms.jpg"
+},
+
+{
+name:"ELITE",
+image:"shows/elite.jpg"
+},
+
+{
+name:"GEN V",
+image:"shows/gen_v.jpg"
+}
+
+];
+
+let selectedShows =
+JSON.parse(
+localStorage.getItem("selectedShows")
+) || {};
+
+const grid =
+document.getElementById("showsGrid");
+
+SHOWS.forEach(show=>{
+
+if(selectedShows[show.name]===undefined)
+selectedShows[show.name]=true;
+
+const card=document.createElement("div");
+card.className="show-card";
+
+card.innerHTML=`
+
+<img
+class="show-image"
+src="${show.image}"
+>
+
+<div class="show-name">
+${show.name}
+</div>
+
+<div
+class="toggle ${selectedShows[show.name] ? "on":"off"}"
+></div>
+
+`;
+
+const toggle=
+card.querySelector(".toggle");
+
+toggle.onclick=()=>{
+
+selectedShows[show.name]=
+!selectedShows[show.name];
+
+toggle.classList.toggle("on");
+toggle.classList.toggle("off");
+
+save();
+
+};
+
+grid.appendChild(card);
+
+});
+
+function save(){
+
+localStorage.setItem(
+"selectedShows",
+JSON.stringify(selectedShows)
+);
+
+}
+
+document
+.getElementById("startBtn")
+.onclick=()=>{
+
+save();
+
+const activeShows=
+Object.keys(selectedShows)
+.filter(show=>selectedShows[show]);
+
+localStorage.setItem(
+"activeShows",
+JSON.stringify(activeShows)
+);
+
+alert(
+activeShows.length+
+" shows selected"
+);
+
+/*
+هنا بالجزء الثاني
+رح ننتقل لشاشة المقارنات
+*/
+};
+
+</script>
+
+</body>
+</html>
