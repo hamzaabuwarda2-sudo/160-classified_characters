@@ -339,27 +339,6 @@ JSON.stringify(selectedShows)
 
 }
 
-document
-.getElementById("startBtn")
-.onclick=()=>{
-
-save();
-
-const activeShows=
-Object.keys(selectedShows)
-.filter(show=>selectedShows[show]);
-
-localStorage.setItem(
-"activeShows",
-JSON.stringify(activeShows)
-);
-
-alert(
-activeShows.length+
-" shows selected"
-);
-
-startRanking(activeShows);};
 function startRanking(activeShows){
 
 document.body.innerHTML=`
@@ -660,8 +639,6 @@ document.getElementById(
 ).textContent =
 rightCharacter.name;
 
-}
-
 document.getElementById(
 "leftBtn"
 ).onclick=()=>{
@@ -695,12 +672,42 @@ comparisonIndex++;
 showComparison();
 
 };
-  
+
 }
 
 showComparison();
 
 }
+
+document
+.getElementById("startBtn")
+.onclick=()=>{
+
+save();
+
+const activeShows=
+Object.keys(selectedShows)
+.filter(show=>selectedShows[show]);
+
+if(activeShows.length === 0){
+alert("Please select at least one show");
+return;
+}
+
+localStorage.setItem(
+"activeShows",
+JSON.stringify(activeShows)
+);
+
+alert(
+activeShows.length+
+" shows selected"
+);
+
+startRanking(activeShows);
+
+};
+
 </script>
 
 </body>
