@@ -502,6 +502,31 @@ characters.filter(
 c => activeShows.includes(c.show)
 );
 
+let comparisons = [];
+let comparisonIndex = 0;
+
+function shuffle(array){
+
+for(let i=array.length-1;i>0;i--){
+
+const j=Math.floor(
+Math.random()*(i+1)
+);
+
+[array[i],array[j]] =
+[array[j],array[i]];
+
+}
+
+return array;
+
+}
+
+const rankingPool =
+shuffle(
+[...selectedCharacters]
+);
+  
 if(selectedCharacters.length < 2){
 
 alert("Select at least one show with 2 characters");
@@ -512,8 +537,9 @@ return;
 
 }
 
-let index = 0;
-
+let leftCharacter = null;
+let rightCharacter = null;
+  
 function firstNameImage(name){
 
 return "characters/" +
@@ -527,6 +553,79 @@ name
 
 function showComparison(){
 
+if(rankingPool.length < 2){
+
+document.body.innerHTML = `
+
+<h1 style="
+text-align:center;
+margin-top:100px;
+">
+Preparing Merge Sort...
+</h1>
+
+`;
+
+console.log(comparisons);
+
+return;
+
+}
+
+leftCharacter =
+rankingPool[
+Math.floor(
+Math.random()*rankingPool.length
+)
+];
+
+do{
+
+rightCharacter =
+rankingPool[
+Math.floor(
+Math.random()*rankingPool.length
+)
+];
+
+}
+while(
+rightCharacter===leftCharacter
+);
+
+document.getElementById(
+"progressText"
+).textContent =
+
+"Comparison " +
+(comparisonIndex+1);
+
+document.getElementById(
+"leftImage"
+).src =
+firstNameImage(
+leftCharacter.name
+);
+
+document.getElementById(
+"rightImage"
+).src =
+firstNameImage(
+rightCharacter.name
+);
+
+document.getElementById(
+"leftBtn"
+).textContent =
+leftCharacter.name;
+
+document.getElementById(
+"rightBtn"
+).textContent =
+rightCharacter.name;
+
+}
+  
 if(index >= selectedCharacters.length-1){
 
 document.body.innerHTML=`
@@ -562,32 +661,40 @@ document.getElementById("rightImage")
 .src =
 firstNameImage(right.name);
 
-document.getElementById("leftBtn")
-.textContent =
-left.name;
+document.getElementById(
+"leftBtn"
+).onclick=()=>{
 
-document.getElementById("rightBtn")
-.textContent =
-right.name;
+comparisons.push({
 
-document.getElementById("leftBtn")
-.onclick=()=>{
+winner:leftCharacter.name,
+loser:rightCharacter.name
 
-index++;
+});
 
-showComparison();
-
-};
-
-document.getElementById("rightBtn")
-.onclick=()=>{
-
-index++;
+comparisonIndex++;
 
 showComparison();
 
 };
 
+document.getElementById(
+"rightBtn"
+).onclick=()=>{
+
+comparisons.push({
+
+winner:rightCharacter.name,
+loser:leftCharacter.name
+
+});
+
+comparisonIndex++;
+
+showComparison();
+
+};
+  
 }
 
 showComparison();
