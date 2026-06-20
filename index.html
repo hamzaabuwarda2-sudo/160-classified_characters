@@ -448,55 +448,51 @@ Character B
 
 `;
 
-const characters = [
+const CHARACTER_DB = {
 
-{
-name:"Jon Snow",
-show:"GAME OF THRONES"
-},
+"GAME OF THRONES":[
+"Jon Snow",
+"Tyrion Lannister",
+"Daenerys Targaryen",
+"Cersei Lannister",
+"Jaime Lannister",
+"Sandor Clegane",
+"Ned Stark",
+"Petyr Baelish",
+"Lord Varys",
+"Jorah Mormont",
+"Bronn",
+"Tywin Lannister",
+"Joffrey Baratheon",
+"Ramsay Bolton",
+"Robert Baratheon"
+],
 
-{
-name:"Tyrion Lannister",
-show:"GAME OF THRONES"
-},
+"VIKINGS":[
+"Ragnar Lothbrok",
+"Bjorn Ironside",
+"Ivar the Boneless",
+"Floki",
+"Lagertha",
+"Ubbe Lothbrok",
+"Hvitserk Lothbrok",
+"Sigurd Snake In The Eye",
+"Rollo Sigurdsson",
+"King Ecbert",
+"Harald Finehair"
+],
 
-{
-name:"Daenerys Targaryen",
-show:"GAME OF THRONES"
-},
+"BREAKING BAD":[
+"Walter White",
+"Jesse Pinkman",
+"Saul Goodman",
+"Gustavo Fring",
+"Hank Schrader",
+"Mike Ehrmantraut"
+]
 
-{
-name:"Walter White",
-show:"BREAKING BAD"
-},
-
-{
-name:"Jesse Pinkman",
-show:"BREAKING BAD"
-},
-
-{
-name:"Rick Grimes",
-show:"THE WALKING DEAD"
-},
-
-{
-name:"Daryl Dixon",
-show:"THE WALKING DEAD"
-},
-
-{
-name:"Ragnar Lothbrok",
-show:"VIKINGS"
-},
-
-{
-name:"Bjorn Ironside",
-show:"VIKINGS"
-}
-
-];
-
+};
+  
 const selectedCharacters =
 characters.filter(
 c => activeShows.includes(c.show)
