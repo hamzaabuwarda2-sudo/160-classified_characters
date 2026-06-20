@@ -1007,6 +1007,116 @@ showComparison();
 
   }
 
+function showComparison(){
+
+if(
+!mergeState.leftList ||
+!mergeState.rightList
+){
+
+getNextMerge();
+return;
+
+}
+
+const left =
+mergeState.leftList[
+mergeState.leftIndex
+];
+
+const right =
+mergeState.rightList[
+mergeState.rightIndex
+];
+
+const rankingScreen =
+document.querySelector(
+'.ranking-screen'
+);
+
+rankingScreen.innerHTML = `
+
+<div class="progress-text">
+
+${completedComparisons}
+ /
+${totalComparisonsEstimate}
+
+</div>
+
+<div class="comparison-container">
+
+<div class="character-card">
+
+<img
+class="character-image"
+src="${firstNameImage(left.name)}"
+onerror="this.src='characters/placeholder.jpg'"
+>
+
+<button
+id="leftBtn"
+class="character-btn"
+>
+
+${left.name}
+
+</button>
+
+</div>
+
+<div class="character-card">
+
+<img
+class="character-image"
+src="${firstNameImage(right.name)}"
+onerror="this.src='characters/placeholder.jpg'"
+>
+
+<button
+id="rightBtn"
+class="character-btn"
+>
+
+${right.name}
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+document
+.getElementById("leftBtn")
+.onclick = () => {
+
+chooseWinner(true);
+
+};
+
+document
+.getElementById("rightBtn")
+.onclick = () => {
+
+chooseWinner(false);
+
+};
+
+}
+
+function showResults(finalRanking){
+
+console.log(finalRanking);
+
+alert(
+"Merge Sort Finished\n\nCharacters Ranked: "
++ finalRanking.length
+);
+
+}
+  
 document.body.innerHTML = `
 
 <div class="ranking-screen">
