@@ -766,26 +766,15 @@ return;
 
 }
 
-let scores = {};
-selectedCharacters.forEach(c => {
-scores[c.name] = 0;
-});
-
-let comparisonIndex = 0;
-let leftCharacter = null;
-let rightCharacter = null;
-let comparisonCount = Math.ceil(selectedCharacters.length * 2);
-let comparisons = 0;
+const rankingPool = [...selectedCharacters];
 
 function shuffle(array){
 
 for(let i=array.length-1;i>0;i--){
 
-const j=Math.floor(
-Math.random()*(i+1)
-);
+const j=Math.floor(Math.random()*(i+1));
 
-[array[i],array[j]] =
+[array[i],array[j]]=
 [array[j],array[i]];
 
 }
@@ -794,187 +783,229 @@ return array;
 
 }
 
-const pool =
-shuffle(
-[...selectedCharacters]
+shuffle(rankingPool);
+
+let mergeState = {
+
+lists: rankingPool.map(character => [character]),
+
+leftList:null,
+rightList:null,
+
+leftIndex:0,
+rightIndex:0,
+
+merged:[],
+
+phase:"merge"
+
+};
+
+let totalComparisonsEstimate =
+Math.ceil(
+selectedCharacters.length *
+Math.log2(selectedCharacters.length)
 );
 
-function firstNameImage(name){
+let completedComparisons = 0;
+  function firstNameImage(name){
 
-const first =
-name
-.split(" ")[0]
-.toLowerCase()
-.replace(/[^a-z0-9]/g,"");
-
-const duplicates =
-selectedCharacters.filter(c =>
-
-c.name
-.split(" ")[0]
-.toLowerCase()
-.replace(/[^a-z0-9]/g,"")
-
-=== first
-
-);
-
-if(duplicates.length === 1){
-
-return `characters/${first}.jpg`;
-
-}
-
-const full =
+const cleanName =
 name
 .toLowerCase()
 .replace(/[^a-z0-9 ]/g,"")
 .trim()
 .replace(/\s+/g,"_");
 
-return `characters/${full}.jpg`;
+return `characters/${cleanName}.jpg`;
 
-}
+  }
 
-function showResults(){
+  function getNextMerge(){
 
-const ranked = Object.entries(scores)
-.map(([name, score]) => {
-const char = selectedCharacters.find(c => c.name === name);
-return { name, score, show: char.show };
-})
-.sort((a, b) => b.score - a.score);
+if(
+mergeState.leftList &&
+mergeState.rightList
+){
 
-const rankingScreen = document.querySelector('.ranking-screen');
-
-rankingScreen.innerHTML = `
-
-<div class="results-screen">
-
-<h1 class="results-title">Character Rankings</h1>
-
-<div class="results-list">
-
-${ranked.map((char, index) => `
-
-<div class="result-item">
-<div class="result-rank">#${index + 1}</div>
-<div class="result-info">
-<div class="result-name">${char.name}</div>
-<div class="result-show">${char.show}</div>
-</div>
-<div style="font-size:18px; font-weight:bold; color:#22c55e;">${char.score} wins</div>
-</div>
-
-`).join('')}
-
-</div>
-
-<button class="back-btn" onclick="location.reload()">Back to Selection</button>
-
-</div>
-
-`;
-
-}
-
-function showComparison(){
-
-if(comparisons >= comparisonCount || pool.length < 2){
-
-showResults();
 return;
 
 }
 
-leftCharacter =
-pool[
-Math.floor(
-Math.random()*pool.length
-)
-];
+if(
+mergeState.lists.length === 1
+){
 
-do{
-
-rightCharacter =
-pool[
-Math.floor(
-Math.random()*pool.length
-)
-];
-
-}
-while(
-rightCharacter===leftCharacter
+showResults(
+mergeState.lists[0]
 );
 
-const rankingScreen = document.querySelector('.ranking-screen');
-
-rankingScreen.innerHTML = `
-
-<div class="progress-text">
-Comparison ${comparisons + 1} of ${comparisonCount}
-</div>
-
-<div class="comparison-container">
-
-<div class="character-card">
-
-<img
-id="leftImage"
-class="character-image"
-src="${firstNameImage(leftCharacter.name)}"
-onerror="this.style.background='#374151'"
->
-
-<button
-id="leftBtn"
-class="character-btn"
->
-${leftCharacter.name}
-</button>
-
-</div>
-
-<div class="character-card">
-
-<img
-id="rightImage"
-class="character-image"
-src="${firstNameImage(rightCharacter.name)}"
-onerror="this.style.background='#374151'"
->
-
-<button
-id="rightBtn"
-class="character-btn"
->
-${rightCharacter.name}
-</button>
-
-</div>
-
-</div>
-
-`;
-
-document.getElementById("leftBtn").onclick=()=>{
-
-scores[leftCharacter.name]++;
-comparisons++;
-showComparison();
-
-};
-
-document.getElementById("rightBtn").onclick=()=>{
-
-scores[rightCharacter.name]++;
-comparisons++;
-showComparison();
-
-};
+return;
 
 }
+
+const nextRound = [];
+
+for(
+let i=0;
+i<mergeState.lists.length;
+i+=2
+){
+
+if(
+i+1 >= mergeState.lists.length
+){
+
+nextRound.push(
+mergeState.lists[i]
+);
+
+continue;
+
+}
+
+nextRound.push({
+
+left:mergeState.lists[i],
+right:mergeState.lists[i+1]
+
+});
+
+}
+
+const pair =
+nextRound.find(
+x => x.left
+);
+
+mergeState.nextRound =
+nextRound;
+
+mergeState.leftList =
+pair.left;
+
+mergeState.rightList =
+pair.right;
+
+mergeState.leftIndex = 0;
+mergeState.rightIndex = 0;
+mergeState.merged = [];
+
+showComparison();
+
+  }
+
+  function chooseWinner(leftWon){
+
+completedComparisons++;
+
+if(leftWon){
+
+mergeState.merged.push(
+
+mergeState.leftList[
+mergeState.leftIndex
+]
+
+);
+
+mergeState.leftIndex++;
+
+}else{
+
+mergeState.merged.push(
+
+mergeState.rightList[
+mergeState.rightIndex
+]
+
+);
+
+mergeState.rightIndex++;
+
+}
+
+while(
+
+mergeState.leftIndex >=
+mergeState.leftList.length
+
+&&
+
+mergeState.rightIndex <
+mergeState.rightList.length
+
+){
+
+mergeState.merged.push(
+
+mergeState.rightList[
+mergeState.rightIndex++
+]
+
+);
+
+}
+
+while(
+
+mergeState.rightIndex >=
+mergeState.rightList.length
+
+&&
+
+mergeState.leftIndex <
+mergeState.leftList.length
+
+){
+
+mergeState.merged.push(
+
+mergeState.leftList[
+mergeState.leftIndex++
+]
+
+);
+
+}
+
+if(
+
+mergeState.leftIndex >=
+mergeState.leftList.length
+
+&&
+
+mergeState.rightIndex >=
+mergeState.rightList.length
+
+){
+
+const index =
+mergeState.nextRound.findIndex(
+x => x.left
+);
+
+mergeState.nextRound[index] =
+mergeState.merged;
+
+mergeState.lists =
+mergeState.nextRound.filter(
+x => Array.isArray(x)
+);
+
+mergeState.leftList = null;
+mergeState.rightList = null;
+
+getNextMerge();
+
+return;
+
+}
+
+showComparison();
+
+  }
 
 document.body.innerHTML = `
 
