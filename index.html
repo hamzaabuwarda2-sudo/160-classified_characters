@@ -910,6 +910,10 @@ nextRound.find(
 x => x.left
 );
 
+if(!pair){
+return;
+}
+
 mergeState.nextRound =
 nextRound;
 
@@ -1321,7 +1325,7 @@ ${c.show}
 
 <button
 class="back-btn"
-onclick='navigator.clipboard.writeText(`${exportText}`)'
+onclick='navigator.clipboard.writeText(\`${exportText}\`)'
 >
 
 Copy Ranking
