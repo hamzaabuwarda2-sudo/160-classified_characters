@@ -493,11 +493,25 @@ const CHARACTER_DB = {
 
 };
   
-const selectedCharacters =
-characters.filter(
-c => activeShows.includes(c.show)
-);
+const selectedCharacters = [];
 
+activeShows.forEach(show=>{
+
+if(!CHARACTER_DB[show]) return;
+
+CHARACTER_DB[show].forEach(character=>{
+
+selectedCharacters.push({
+
+name:character,
+show:show
+
+});
+
+});
+
+});
+  
 let comparisons = [];
 let comparisonIndex = 0;
 
