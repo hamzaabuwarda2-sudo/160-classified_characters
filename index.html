@@ -867,9 +867,10 @@ if(
 mergeState.lists.length === 1
 ){
 
-showResults(
-mergeState.lists[0]
-);
+confirmationRanking =
+[...mergeState.lists[0]];
+
+startConfirmation();
 
 return;
 
