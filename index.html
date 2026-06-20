@@ -837,8 +837,6 @@ Math.log2(selectedCharacters.length)
 );
 
 let completedComparisons = 0;
-  let confirmationRanking = null;
-let confirmationMatchesLeft = 25;
   function firstNameImage(name){
 
 const cleanName =
@@ -867,10 +865,9 @@ if(
 mergeState.lists.length === 1
 ){
 
-confirmationRanking =
-[...mergeState.lists[0]];
-
-startConfirmation();
+showResults(
+mergeState.lists[0]
+);
 
 return;
 
@@ -1123,147 +1120,6 @@ document
 document
 .getElementById("rightBtn")
 .onclick = ()=>chooseWinner(false);
-
-}
-
-function startConfirmation(){
-
-if(confirmationMatchesLeft <= 0){
-
-showResults(
-confirmationRanking
-);
-
-return;
-
-}
-
-const max =
-Math.min(
-25,
-confirmationRanking.length
-);
-
-const a =
-Math.floor(Math.random()*max);
-
-let b =
-Math.floor(Math.random()*max);
-
-while(a===b){
-
-b =
-Math.floor(Math.random()*max);
-
-}
-
-const left =
-confirmationRanking[a];
-
-const right =
-confirmationRanking[b];
-
-document.body.innerHTML = `
-
-<div class="ranking-screen">
-
-<div class="progress-text">
-
-Confirmation Round
-(${26-confirmationMatchesLeft}/25)
-
-</div>
-
-<div class="comparison-container">
-
-<div class="character-card">
-
-<img
-class="character-image"
-src="${firstNameImage(left.name)}"
->
-
-<button
-class="character-btn"
-id="confirmLeft"
->
-
-#${a+1}
-${left.name}
-
-</button>
-
-</div>
-
-<div class="character-card">
-
-<img
-class="character-image"
-src="${firstNameImage(right.name)}"
->
-
-<button
-class="character-btn"
-id="confirmRight"
->
-
-#${b+1}
-${right.name}
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-`;
-
-document
-.getElementById("confirmLeft")
-.onclick =
-()=>confirmChoice(a,b,true);
-
-document
-.getElementById("confirmRight")
-.onclick =
-()=>confirmChoice(a,b,false);
-
-}
-
-function confirmChoice(a,b,leftWon){
-
-if(
-(leftWon && a>b)
-||
-(!leftWon && b>a)
-){
-
-const winner =
-leftWon
-? confirmationRanking[a]
-: confirmationRanking[b];
-
-confirmationRanking =
-confirmationRanking.filter(
-x => x!==winner
-);
-
-const newPos =
-Math.min(a,b);
-
-confirmationRanking.splice(
-newPos,
-0,
-winner
-);
-
-}
-
-confirmationMatchesLeft--;
-
-startConfirmation();
 
 }
   
