@@ -293,6 +293,8 @@ Character Ranker
 START
 </button>
 
+<div id="charCount"></div>
+  
 <div class="shows-grid" id="showsGrid">
 </div>
 
@@ -738,6 +740,29 @@ JSON.stringify(selectedShows)
 
 }
 
+function updateCharacterCount(){
+
+let total = 0;
+
+Object.keys(selectedShows)
+.forEach(show=>{
+
+if(selectedShows[show]){
+
+total +=
+CHARACTER_DB[show]?.length || 0;
+
+}
+
+});
+
+document.getElementById(
+"charCount"
+).textContent =
+total + " Characters";
+
+}
+  
 function startRanking(activeShows){
 
 const selectedCharacters = [];
