@@ -542,12 +542,38 @@ let rightCharacter = null;
   
 function firstNameImage(name){
 
-return "characters/" +
+const first =
 name
 .split(" ")[0]
 .toLowerCase()
+.replace(/[^a-z0-9]/g,"");
+
+const duplicates =
+selectedCharacters.filter(c =>
+
+c.name
+.split(" ")[0]
+.toLowerCase()
 .replace(/[^a-z0-9]/g,"")
-+ ".jpg";
+
+=== first
+
+);
+
+if(duplicates.length === 1){
+
+return `characters/${first}.jpg`;
+
+}
+
+const full =
+name
+.toLowerCase()
+.replace(/[^a-z0-9 ]/g,"")
+.trim()
+.replace(/\s+/g,"_");
+
+return `characters/${full}.jpg`;
 
 }
 
