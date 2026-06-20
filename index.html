@@ -1092,6 +1092,18 @@ document
 
 function showResults(ranking){
 
+localStorage.setItem(
+"lastRanking",
+JSON.stringify(ranking)
+);
+
+const exportText =
+ranking
+.map((c,i)=>
+`${i+1}. ${c.name}`
+)
+.join("\n");
+  
 document.body.innerHTML = `
 
 <div class="results-screen">
@@ -1104,7 +1116,7 @@ Final Ranking
 
 <div class="results-list">
 
-${ranking.map((c,i)=>`
+${ranking.slice(0,25).map((c,i)=>`
 
 <div class="result-item">
 
@@ -1133,6 +1145,24 @@ ${c.show}
 </div>
 
 `).join("")}
+
+<button
+class="back-btn"
+onclick='navigator.clipboard.writeText(`${exportText}`)'
+>
+
+Copy Ranking
+
+</button>
+
+<button
+class="back-btn"
+onclick="location.reload()"
+>
+
+Restart
+
+</button>
 
 </div>
 
