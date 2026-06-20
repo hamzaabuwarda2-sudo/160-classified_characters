@@ -112,6 +112,131 @@ background:#22c55e;
 background:#ef4444;
 }
 
+.ranking-screen{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+min-height:100vh;
+padding:30px;
+}
+
+.progress-text{
+font-size:20px;
+margin-bottom:20px;
+font-weight:600;
+}
+
+.comparison-container{
+display:flex;
+gap:40px;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+.character-card{
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.character-image{
+width:300px;
+height:420px;
+object-fit:cover;
+border-radius:16px;
+background:#1f2937;
+border:2px solid #374151;
+}
+
+.character-btn{
+width:300px;
+margin-top:15px;
+padding:14px;
+font-size:18px;
+cursor:pointer;
+background:#16a34a;
+border:none;
+border-radius:8px;
+color:white;
+font-weight:bold;
+transition:.2s;
+}
+
+.character-btn:hover{
+background:#15803d;
+transform:scale(1.02);
+}
+
+.results-screen{
+display:flex;
+flex-direction:column;
+align-items:center;
+padding:40px;
+max-width:900px;
+margin:0 auto;
+}
+
+.results-title{
+font-size:36px;
+font-weight:bold;
+margin-bottom:40px;
+}
+
+.results-list{
+width:100%;
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.result-item{
+display:flex;
+align-items:center;
+padding:20px;
+background:#1f2937;
+border-radius:12px;
+gap:20px;
+}
+
+.result-rank{
+font-size:24px;
+font-weight:bold;
+color:#22c55e;
+min-width:50px;
+}
+
+.result-info{
+flex-grow:1;
+}
+
+.result-name{
+font-size:18px;
+font-weight:600;
+}
+
+.result-show{
+font-size:14px;
+color:#9ca3af;
+margin-top:5px;
+}
+
+.back-btn{
+background:#6366f1;
+border:none;
+padding:12px 30px;
+font-size:16px;
+border-radius:8px;
+cursor:pointer;
+color:white;
+font-weight:bold;
+margin-top:40px;
+}
+
+.back-btn:hover{
+background:#4f46e5;
+}
+
 @media(max-width:1200px){
 
 .shows-grid{
@@ -126,12 +251,29 @@ grid-template-columns:repeat(3,1fr);
 grid-template-columns:repeat(2,1fr);
 }
 
+.comparison-container{
+gap:20px;
+}
+
 }
 
 @media(max-width:600px){
 
 .shows-grid{
 grid-template-columns:1fr;
+}
+
+.comparison-container{
+flex-direction:column;
+}
+
+.character-image{
+width:250px;
+height:350px;
+}
+
+.character-btn{
+width:250px;
 }
 
 }
@@ -598,92 +740,6 @@ JSON.stringify(selectedShows)
 
 function startRanking(activeShows){
 
-document.body.innerHTML=`
-
-<div id="rankingScreen"
-style="
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-min-height:100vh;
-padding:30px;
-">
-
-<div id="progressText"
-style="
-font-size:20px;
-margin-bottom:20px;
-">
-Loading...
-</div>
-
-<div
-style="
-display:flex;
-gap:40px;
-flex-wrap:wrap;
-justify-content:center;
-">
-
-<div class="characterCard">
-
-<img
-id="leftImage"
-style="
-width:300px;
-height:420px;
-object-fit:cover;
-border-radius:16px;
-background:#1f2937;
-">
-
-<button
-id="leftBtn"
-style="
-width:300px;
-margin-top:15px;
-padding:14px;
-font-size:20px;
-cursor:pointer;
-">
-Character A
-</button>
-
-</div>
-
-<div class="characterCard">
-
-<img
-id="rightImage"
-style="
-width:300px;
-height:420px;
-object-fit:cover;
-border-radius:16px;
-background:#1f2937;
-">
-
-<button
-id="rightBtn"
-style="
-width:300px;
-margin-top:15px;
-padding:14px;
-font-size:20px;
-cursor:pointer;
-">
-Character B
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-`;
-  
 const selectedCharacters = [];
 
 activeShows.forEach(show=>{
@@ -702,9 +758,24 @@ show:show
 });
 
 });
-  
-let comparisons = [];
+
+if(selectedCharacters.length < 2){
+
+alert("Select at least one show with 2 characters");
+return;
+
+}
+
+let scores = {};
+selectedCharacters.forEach(c => {
+scores[c.name] = 0;
+});
+
 let comparisonIndex = 0;
+let leftCharacter = null;
+let rightCharacter = null;
+let comparisonCount = Math.ceil(selectedCharacters.length * 2);
+let comparisons = 0;
 
 function shuffle(array){
 
@@ -723,24 +794,11 @@ return array;
 
 }
 
-const rankingPool =
+const pool =
 shuffle(
 [...selectedCharacters]
 );
-  
-if(selectedCharacters.length < 2){
 
-alert("Select at least one show with 2 characters");
-
-location.reload();
-
-return;
-
-}
-
-let leftCharacter = null;
-let rightCharacter = null;
-  
 function firstNameImage(name){
 
 const first =
@@ -778,40 +836,70 @@ return `characters/${full}.jpg`;
 
 }
 
-function showComparison(){
+function showResults(){
 
-if(rankingPool.length < 2){
+const ranked = Object.entries(scores)
+.map(([name, score]) => {
+const char = selectedCharacters.find(c => c.name === name);
+return { name, score, show: char.show };
+})
+.sort((a, b) => b.score - a.score);
 
-document.body.innerHTML = `
+const rankingScreen = document.querySelector('.ranking-screen');
 
-<h1 style="
-text-align:center;
-margin-top:100px;
-">
-Preparing Merge Sort...
-</h1>
+rankingScreen.innerHTML = `
+
+<div class="results-screen">
+
+<h1 class="results-title">Character Rankings</h1>
+
+<div class="results-list">
+
+${ranked.map((char, index) => `
+
+<div class="result-item">
+<div class="result-rank">#${index + 1}</div>
+<div class="result-info">
+<div class="result-name">${char.name}</div>
+<div class="result-show">${char.show}</div>
+</div>
+<div style="font-size:18px; font-weight:bold; color:#22c55e;">${char.score} wins</div>
+</div>
+
+`).join('')}
+
+</div>
+
+<button class="back-btn" onclick="location.reload()">Back to Selection</button>
+
+</div>
 
 `;
 
-console.log(comparisons);
+}
 
+function showComparison(){
+
+if(comparisons >= comparisonCount || pool.length < 2){
+
+showResults();
 return;
 
 }
 
 leftCharacter =
-rankingPool[
+pool[
 Math.floor(
-Math.random()*rankingPool.length
+Math.random()*pool.length
 )
 ];
 
 do{
 
 rightCharacter =
-rankingPool[
+pool[
 Math.floor(
-Math.random()*rankingPool.length
+Math.random()*pool.length
 )
 ];
 
@@ -820,72 +908,83 @@ while(
 rightCharacter===leftCharacter
 );
 
-document.getElementById(
-"progressText"
-).textContent =
+const rankingScreen = document.querySelector('.ranking-screen');
 
-"Comparison " +
-(comparisonIndex+1);
+rankingScreen.innerHTML = `
 
-document.getElementById(
-"leftImage"
-).src =
-firstNameImage(
-leftCharacter.name
-);
+<div class="progress-text">
+Comparison ${comparisons + 1} of ${comparisonCount}
+</div>
 
-document.getElementById(
-"rightImage"
-).src =
-firstNameImage(
-rightCharacter.name
-);
+<div class="comparison-container">
 
-document.getElementById(
-"leftBtn"
-).textContent =
-leftCharacter.name;
+<div class="character-card">
 
-document.getElementById(
-"rightBtn"
-).textContent =
-rightCharacter.name;
+<img
+id="leftImage"
+class="character-image"
+src="${firstNameImage(leftCharacter.name)}"
+onerror="this.style.background='#374151'"
+>
 
-document.getElementById(
-"leftBtn"
-).onclick=()=>{
+<button
+id="leftBtn"
+class="character-btn"
+>
+${leftCharacter.name}
+</button>
 
-comparisons.push({
+</div>
 
-winner:leftCharacter.name,
-loser:rightCharacter.name
+<div class="character-card">
 
-});
+<img
+id="rightImage"
+class="character-image"
+src="${firstNameImage(rightCharacter.name)}"
+onerror="this.style.background='#374151'"
+>
 
-comparisonIndex++;
+<button
+id="rightBtn"
+class="character-btn"
+>
+${rightCharacter.name}
+</button>
 
+</div>
+
+</div>
+
+`;
+
+document.getElementById("leftBtn").onclick=()=>{
+
+scores[leftCharacter.name]++;
+comparisons++;
 showComparison();
 
 };
 
-document.getElementById(
-"rightBtn"
-).onclick=()=>{
+document.getElementById("rightBtn").onclick=()=>{
 
-comparisons.push({
-
-winner:rightCharacter.name,
-loser:leftCharacter.name
-
-});
-
-comparisonIndex++;
-
+scores[rightCharacter.name]++;
+comparisons++;
 showComparison();
 
 };
 
 }
+
+document.body.innerHTML = `
+
+<div class="ranking-screen">
+
+<div class="progress-text">Loading...</div>
+
+</div>
+
+`;
 
 showComparison();
 
@@ -909,11 +1008,6 @@ return;
 localStorage.setItem(
 "activeShows",
 JSON.stringify(activeShows)
-);
-
-alert(
-activeShows.length+
-" shows selected"
 );
 
 startRanking(activeShows);
