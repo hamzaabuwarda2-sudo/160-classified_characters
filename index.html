@@ -826,7 +826,9 @@ rightIndex:0,
 
 merged:[],
 
-phase:"merge"
+phase:"merge",
+
+nextRound:[]
 
 };
 
@@ -865,9 +867,9 @@ if(
 mergeState.lists.length === 1
 ){
 
-showResults(
-mergeState.lists[0]
-);
+confirmationRanking = mergeState.lists[0];
+confirmationMatchesLeft = 25;
+startConfirmation();
 
 return;
 
@@ -904,7 +906,7 @@ right:mergeState.lists[i+1]
 
 const pair =
 nextRound.find(
-x => x.left
+x => x.left && x.right
 );
 
 if(!pair){
@@ -1003,71 +1005,48 @@ mergeState.leftIndex++
 }
 
 if(
-
-mergeState.leftIndex >=
-mergeState.leftList.length
-
-&&
-
-mergeState.rightIndex >=
-mergeState.rightList.length
-
+mergeState.leftIndex >= mergeState.leftList.length &&
+mergeState.rightIndex >= mergeState.rightList.length
 ){
 
-const index =
-mergeState.nextRound.findIndex(
-x => x.left
+mergeState.nextRound = mergeState.nextRound.map(pair =>
+(pair.left === mergeState.leftList && pair.right === mergeState.rightList)
+? mergeState.merged
+: pair
 );
 
-mergeState.nextRound[index] =
-mergeState.merged;
-
-mergeState.lists =
-mergeState.nextRound.filter(
-x => Array.isArray(x)
-);
+mergeState.lists = mergeState.nextRound;
 
 mergeState.leftList = null;
 mergeState.rightList = null;
 
 getNextMerge();
 
-return;
+}else{
+
+showComparison();
 
 }
 
-  showComparison();
+}
 
-  }
+let confirmationRanking = [];
+let confirmationMatchesLeft = 0;
 
 function showComparison(){
 
-if(!mergeState.leftList){
+const left = mergeState.leftList[mergeState.leftIndex];
+const right = mergeState.rightList[mergeState.rightIndex];
 
-getNextMerge();
-return;
+const progress = Math.min(100, Math.floor((completedComparisons / totalComparisonsEstimate) * 100));
 
-}
+document.body.innerHTML = `
 
-const left =
-mergeState.leftList[
-mergeState.leftIndex
-];
-
-const right =
-mergeState.rightList[
-mergeState.rightIndex
-];
-
-document.querySelector(
-".ranking-screen"
-).innerHTML = `
+<div class="ranking-screen">
 
 <div class="progress-text">
 
-${completedComparisons}
- /
-${totalComparisonsEstimate}
+Progress: ${progress}%
 
 </div>
 
@@ -1111,6 +1090,8 @@ ${right.name}
 
 </div>
 
+</div>
+
 `;
 
 document
@@ -1120,6 +1101,147 @@ document
 document
 .getElementById("rightBtn")
 .onclick = ()=>chooseWinner(false);
+
+}
+
+function startConfirmation(){
+
+if(confirmationMatchesLeft <= 0){
+
+showResults(
+confirmationRanking
+);
+
+return;
+
+}
+
+const max =
+Math.min(
+25,
+confirmationRanking.length
+);
+
+const a =
+Math.floor(Math.random()*max);
+
+let b =
+Math.floor(Math.random()*max);
+
+while(a===b){
+
+b =
+Math.floor(Math.random()*max);
+
+}
+
+const left =
+confirmationRanking[a];
+
+const right =
+confirmationRanking[b];
+
+document.body.innerHTML = `
+
+<div class="ranking-screen">
+
+<div class="progress-text">
+
+Confirmation Round
+(${26-confirmationMatchesLeft}/25)
+
+</div>
+
+<div class="comparison-container">
+
+<div class="character-card">
+
+<img
+class="character-image"
+src="${firstNameImage(left.name)}"
+>
+
+<button
+class="character-btn"
+id="confirmLeft"
+>
+
+#${a+1}
+${left.name}
+
+</button>
+
+</div>
+
+<div class="character-card">
+
+<img
+class="character-image"
+src="${firstNameImage(right.name)}"
+>
+
+<button
+class="character-btn"
+id="confirmRight"
+>
+
+#${b+1}
+${right.name}
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+document
+.getElementById("confirmLeft")
+.onclick =
+()=>confirmChoice(a,b,true);
+
+document
+.getElementById("confirmRight")
+.onclick =
+()=>confirmChoice(a,b,false);
+
+}
+
+function confirmChoice(a,b,leftWon){
+
+if(
+(leftWon && a>b)
+||
+(!leftWon && b>a)
+){
+
+const winner =
+leftWon
+? confirmationRanking[a]
+: confirmationRanking[b];
+
+confirmationRanking =
+confirmationRanking.filter(
+x => x!==winner
+);
+
+const newPos =
+Math.min(a,b);
+
+confirmationRanking.splice(
+newPos,
+0,
+winner
+);
+
+}
+
+confirmationMatchesLeft--;
+
+startConfirmation();
 
 }
   
@@ -1214,7 +1336,7 @@ document.body.innerHTML = `
 
 `;
 
-showComparison();
+getNextMerge();
 
 }
 
@@ -1233,11 +1355,6 @@ alert("Please select at least one show");
 return;
 }
 
-localStorage.setItem(
-"activeShows",
-JSON.stringify(activeShows)
-);
-
 startRanking(activeShows);
 
 };
@@ -1245,4 +1362,5 @@ startRanking(activeShows);
 </script>
 
 </body>
+
 </html>
