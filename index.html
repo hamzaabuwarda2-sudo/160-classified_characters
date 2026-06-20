@@ -113,12 +113,16 @@ background:#ef4444;
 }
 
 .ranking-screen{
-display:flex;
+display:none;
 flex-direction:column;
 align-items:center;
 justify-content:center;
 min-height:100vh;
 padding:30px;
+}
+
+.ranking-screen.active{
+display:flex;
 }
 
 .progress-text{
@@ -169,12 +173,16 @@ transform:scale(1.02);
 }
 
 .results-screen{
-display:flex;
+display:none;
 flex-direction:column;
 align-items:center;
 padding:40px;
 max-width:900px;
 margin:0 auto;
+}
+
+.results-screen.active{
+display:flex;
 }
 
 .results-title{
@@ -283,7 +291,7 @@ width:250px;
 
 <body>
 
-<div class="screen">
+<div class="screen" id="mainScreen">
 
 <div class="logo">
 Character Ranker
@@ -297,6 +305,30 @@ START
   
 <div class="shows-grid" id="showsGrid">
 </div>
+
+</div>
+
+<div class="ranking-screen" id="rankingScreen">
+
+<div class="progress-text" id="progressText"></div>
+
+<div class="comparison-container" id="comparisonContainer">
+</div>
+
+</div>
+
+<div class="results-screen" id="resultsScreen">
+
+<div class="results-title">
+Ranking Results
+</div>
+
+<div class="results-list" id="resultsList">
+</div>
+
+<button class="back-btn" id="backBtn">
+Back
+</button>
 
 </div>
 
@@ -733,7 +765,7 @@ grid.appendChild(card);
   
 });
 
-  updateCharacterCount();
+updateCharacterCount();
 
 function save(){
 
@@ -767,35 +799,22 @@ total + " Characters";
 
 }
   
-function startRanking(activeShows){
+function firstNameImage(name){
 
-const selectedCharacters = [];
+const cleanName =
+name
+.toLowerCase()
+.replace(/[^a-z0-9 ]/g,"")
+.trim()
+.replace(/\s+/g,"_");
 
-activeShows.forEach(show=>{
-
-if(!CHARACTER_DB[show]) return;
-
-CHARACTER_DB[show].forEach(character=>{
-
-selectedCharacters.push({
-
-name:character,
-show:show
-
-});
-
-});
-
-});
-
-if(selectedCharacters.length < 2){
-
-alert("Select at least one show with 2 characters");
-return;
+return `characters/${cleanName}.jpg`;
 
 }
 
-const rankingPool = [...selectedCharacters];
+let mergeState = null;
+let totalComparisonsEstimate = 0;
+let completedComparisons = 0;
 
 function shuffle(array){
 
@@ -812,47 +831,7 @@ return array;
 
 }
 
-shuffle(rankingPool);
-
-let mergeState = {
-
-lists: rankingPool.map(character => [character]),
-
-leftList:null,
-rightList:null,
-
-leftIndex:0,
-rightIndex:0,
-
-merged:[],
-
-phase:"merge",
-
-nextRound:[]
-
-};
-
-let totalComparisonsEstimate =
-Math.ceil(
-selectedCharacters.length *
-Math.log2(selectedCharacters.length)
-);
-
-let completedComparisons = 0;
-  function firstNameImage(name){
-
-const cleanName =
-name
-.toLowerCase()
-.replace(/[^a-z0-9 ]/g,"")
-.trim()
-.replace(/\s+/g,"_");
-
-return `characters/${cleanName}.jpg`;
-
-  }
-
-  function getNextMerge(){
+function getNextMerge(){
 
 if(
 mergeState.leftList &&
@@ -867,10 +846,7 @@ if(
 mergeState.lists.length === 1
 ){
 
-confirmationRanking = mergeState.lists[0];
-confirmationMatchesLeft = 25;
-startConfirmation();
-
+showResults(mergeState.lists[0]);
 return;
 
 }
@@ -928,9 +904,9 @@ mergeState.merged = [];
 
 showComparison();
 
-  }
+}
 
-  function chooseWinner(leftWon){
+function chooseWinner(leftWon){
 
 completedComparisons++;
 
@@ -1005,17 +981,36 @@ mergeState.leftIndex++
 }
 
 if(
-mergeState.leftIndex >= mergeState.leftList.length &&
-mergeState.rightIndex >= mergeState.rightList.length
+
+mergeState.leftIndex >=
+mergeState.leftList.length
+
+&&
+
+mergeState.rightIndex >=
+mergeState.rightList.length
+
 ){
 
-mergeState.nextRound = mergeState.nextRound.map(pair =>
-(pair.left === mergeState.leftList && pair.right === mergeState.rightList)
-? mergeState.merged
-: pair
+const nextRound = 
+mergeState.nextRound;
+
+const finishedMergeIndex =
+nextRound.findIndex(
+x => x === mergeState ||
+(x.left === mergeState.leftList &&
+x.right === mergeState.rightList)
 );
 
-mergeState.lists = mergeState.nextRound;
+if(finishedMergeIndex >= 0){
+
+nextRound[finishedMergeIndex] =
+mergeState.merged;
+
+}
+
+mergeState.lists =
+nextRound.filter(x => x);
 
 mergeState.leftList = null;
 mergeState.rightList = null;
@@ -1030,332 +1025,206 @@ showComparison();
 
 }
 
-let confirmationRanking = [];
-let confirmationMatchesLeft = 0;
-
 function showComparison(){
 
-const left = mergeState.leftList[mergeState.leftIndex];
-const right = mergeState.rightList[mergeState.rightIndex];
+const container =
+document.getElementById("comparisonContainer");
 
-const progress = Math.min(100, Math.floor((completedComparisons / totalComparisonsEstimate) * 100));
+container.innerHTML = "";
 
-document.body.innerHTML = `
+const leftChar =
+mergeState.leftList[
+mergeState.leftIndex
+];
 
-<div class="ranking-screen">
+const rightChar =
+mergeState.rightList[
+mergeState.rightIndex
+];
 
-<div class="progress-text">
+const progress =
+document.getElementById("progressText");
 
-Progress: ${progress}%
+progress.textContent = 
+`${completedComparisons} / ${totalComparisonsEstimate}`;
+
+const leftCard = document.createElement("div");
+leftCard.className = "character-card";
+
+leftCard.innerHTML = `
+
+<img 
+class="character-image" 
+src="${firstNameImage(leftChar.name)}" 
+alt="${leftChar.name}"
+>
+
+<div style="text-align:center;margin-top:10px;">
+
+<div style="font-weight:bold;">${leftChar.name}</div>
+
+<div style="font-size:12px;color:#9ca3af;">${leftChar.show}</div>
 
 </div>
 
-<div class="comparison-container">
+<button class="character-btn">Choose</button>
 
-<div class="character-card">
+`;
 
-<img
-class="character-image"
-src="${firstNameImage(left.name)}"
+const leftBtn = leftCard.querySelector(".character-btn");
+leftBtn.onclick = () => chooseWinner(true);
+
+const rightCard = document.createElement("div");
+rightCard.className = "character-card";
+
+rightCard.innerHTML = `
+
+<img 
+class="character-image" 
+src="${firstNameImage(rightChar.name)}" 
+alt="${rightChar.name}"
 >
 
-<button
-class="character-btn"
-id="leftBtn"
->
+<div style="text-align:center;margin-top:10px;">
 
-${left.name}
+<div style="font-weight:bold;">${rightChar.name}</div>
 
-</button>
+<div style="font-size:12px;color:#9ca3af;">${rightChar.show}</div>
 
 </div>
 
-<div class="character-card">
+<button class="character-btn">Choose</button>
 
-<img
-class="character-image"
-src="${firstNameImage(right.name)}"
+`;
+
+const rightBtn = rightCard.querySelector(".character-btn");
+rightBtn.onclick = () => chooseWinner(false);
+
+container.appendChild(leftCard);
+container.appendChild(rightCard);
+
+}
+
+function showResults(finalRanking){
+
+document.getElementById("rankingScreen").classList.remove("active");
+document.getElementById("resultsScreen").classList.add("active");
+
+const resultsList =
+document.getElementById("resultsList");
+
+resultsList.innerHTML = "";
+
+finalRanking.forEach((char, index) => {
+
+const item = document.createElement("div");
+item.className = "result-item";
+
+item.innerHTML = `
+
+<div class="result-rank">${index + 1}</div>
+
+<img 
+style="width:60px;height:80px;border-radius:8px;object-fit:cover;" 
+src="${firstNameImage(char.name)}" 
+alt="${char.name}"
 >
 
-<button
-class="character-btn"
-id="rightBtn"
->
+<div class="result-info">
 
-${right.name}
+<div class="result-name">${char.name}</div>
 
-</button>
-
-</div>
-
-</div>
+<div class="result-show">${char.show}</div>
 
 </div>
 
 `;
 
-document
-.getElementById("leftBtn")
-.onclick = ()=>chooseWinner(true);
+resultsList.appendChild(item);
 
-document
-.getElementById("rightBtn")
-.onclick = ()=>chooseWinner(false);
+});
 
 }
 
-function startConfirmation(){
+function startRanking(activeShows){
 
-if(confirmationMatchesLeft <= 0){
+const selectedCharacters = [];
 
-showResults(
-confirmationRanking
-);
+activeShows.forEach(show=>{
 
+if(!CHARACTER_DB[show]) return;
+
+CHARACTER_DB[show].forEach(character=>{
+
+selectedCharacters.push({
+
+name:character,
+show:show
+
+});
+
+});
+
+});
+
+if(selectedCharacters.length < 2){
+
+alert("Select at least one show with 2 characters");
 return;
 
 }
 
-const max =
-Math.min(
-25,
-confirmationRanking.length
+const rankingPool = [...selectedCharacters];
+
+shuffle(rankingPool);
+
+mergeState = {
+
+lists: rankingPool.map(character => [character]),
+
+leftList:null,
+rightList:null,
+
+leftIndex:0,
+rightIndex:0,
+
+merged:[],
+
+phase:"merge",
+
+nextRound:[]
+
+};
+
+totalComparisonsEstimate =
+Math.ceil(
+selectedCharacters.length *
+Math.log2(selectedCharacters.length)
 );
 
-const a =
-Math.floor(Math.random()*max);
-
-let b =
-Math.floor(Math.random()*max);
-
-while(a===b){
-
-b =
-Math.floor(Math.random()*max);
-
-}
-
-const left =
-confirmationRanking[a];
-
-const right =
-confirmationRanking[b];
-
-document.body.innerHTML = `
-
-<div class="ranking-screen">
-
-<div class="progress-text">
-
-Confirmation Round
-(${26-confirmationMatchesLeft}/25)
-
-</div>
-
-<div class="comparison-container">
-
-<div class="character-card">
-
-<img
-class="character-image"
-src="${firstNameImage(left.name)}"
->
-
-<button
-class="character-btn"
-id="confirmLeft"
->
-
-#${a+1}
-${left.name}
-
-</button>
-
-</div>
-
-<div class="character-card">
-
-<img
-class="character-image"
-src="${firstNameImage(right.name)}"
->
-
-<button
-class="character-btn"
-id="confirmRight"
->
-
-#${b+1}
-${right.name}
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-`;
-
-document
-.getElementById("confirmLeft")
-.onclick =
-()=>confirmChoice(a,b,true);
-
-document
-.getElementById("confirmRight")
-.onclick =
-()=>confirmChoice(a,b,false);
-
-}
-
-function confirmChoice(a,b,leftWon){
-
-if(
-(leftWon && a>b)
-||
-(!leftWon && b>a)
-){
-
-const winner =
-leftWon
-? confirmationRanking[a]
-: confirmationRanking[b];
-
-confirmationRanking =
-confirmationRanking.filter(
-x => x!==winner
-);
-
-const newPos =
-Math.min(a,b);
-
-confirmationRanking.splice(
-newPos,
-0,
-winner
-);
-
-}
-
-confirmationMatchesLeft--;
-
-startConfirmation();
-
-}
-  
-function showResults(ranking){
-
-localStorage.setItem(
-"lastRanking",
-JSON.stringify(ranking)
-);
-
-const exportText =
-ranking
-.map((c,i)=>
-`${i+1}. ${c.name}`
-)
-.join("\n");
-  
-document.body.innerHTML = `
-
-<div class="results-screen">
-
-<h1 class="results-title">
-
-Final Ranking
-
-</h1>
-
-<div class="results-list">
-
-${ranking.slice(0,25).map((c,i)=>`
-
-<div class="result-item">
-
-<div class="result-rank">
-
-#${i+1}
-
-</div>
-
-<div class="result-info">
-
-<div class="result-name">
-
-${c.name}
-
-</div>
-
-<div class="result-show">
-
-${c.show}
-
-</div>
-
-</div>
-
-</div>
-
-`).join("")}
-
-<button
-class="back-btn"
-onclick='navigator.clipboard.writeText(\`${exportText}\`)'
->
-
-Copy Ranking
-
-</button>
-
-<button
-class="back-btn"
-onclick="location.reload()"
->
-
-Restart
-
-</button>
-
-</div>
-
-</div>
-
-`;
-
-  }  
-document.body.innerHTML = `
-
-<div class="ranking-screen">
-
-<div class="progress-text">Loading...</div>
-
-</div>
-
-`;
+completedComparisons = 0;
+
+document.getElementById("mainScreen").classList.remove("active");
+document.getElementById("rankingScreen").classList.add("active");
+document.getElementById("resultsScreen").classList.remove("active");
 
 getNextMerge();
 
 }
 
-document
-.getElementById("startBtn")
-.onclick=()=>{
+document.getElementById("startBtn").onclick = () => {
 
-save();
-
-const activeShows=
-Object.keys(selectedShows)
-.filter(show=>selectedShows[show]);
-
-if(activeShows.length === 0){
-alert("Please select at least one show");
-return;
-}
+const activeShows = Object.keys(selectedShows)
+.filter(show => selectedShows[show]);
 
 startRanking(activeShows);
+
+};
+
+document.getElementById("backBtn").onclick = () => {
+
+document.getElementById("mainScreen").classList.add("active");
+document.getElementById("resultsScreen").classList.remove("active");
 
 };
 
