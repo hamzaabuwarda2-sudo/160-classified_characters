@@ -55,7 +55,7 @@ width:100%;
 max-width:1300px;
 
 display:grid;
-grid-template-columns:repeat(3,1fr);
+grid-template-columns:repeat(4,1fr);
 gap:25px;
 }
 
@@ -65,6 +65,8 @@ border-radius:18px;
 padding:15px;
 text-align:center;
 transition:.2s;
+display:flex;
+flex-direction:column;
 }
 
 .show-card:hover{
@@ -73,7 +75,7 @@ transform:translateY(-3px);
 
 .show-image{
 width:100%;
-height:170px;
+height:280px;
 object-fit:cover;
 border-radius:12px;
 background:#374151;
@@ -81,8 +83,12 @@ background:#374151;
 
 .show-name{
 margin-top:10px;
-font-size:18px;
+font-size:16px;
 font-weight:600;
+flex-grow:1;
+display:flex;
+align-items:center;
+justify-content:center;
 }
 
 .toggle{
@@ -104,6 +110,14 @@ background:#22c55e;
 
 .off{
 background:#ef4444;
+}
+
+@media(max-width:1200px){
+
+.shows-grid{
+grid-template-columns:repeat(3,1fr);
+}
+
 }
 
 @media(max-width:900px){
