@@ -360,7 +360,239 @@ activeShows.length+
 );
 
 startRanking(activeShows);};
+function startRanking(activeShows){
 
+document.body.innerHTML=`
+
+<div id="rankingScreen"
+style="
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+min-height:100vh;
+padding:30px;
+">
+
+<div id="progressText"
+style="
+font-size:20px;
+margin-bottom:20px;
+">
+Loading...
+</div>
+
+<div
+style="
+display:flex;
+gap:40px;
+flex-wrap:wrap;
+justify-content:center;
+">
+
+<div class="characterCard">
+
+<img
+id="leftImage"
+style="
+width:300px;
+height:420px;
+object-fit:cover;
+border-radius:16px;
+background:#1f2937;
+">
+
+<button
+id="leftBtn"
+style="
+width:300px;
+margin-top:15px;
+padding:14px;
+font-size:20px;
+cursor:pointer;
+">
+Character A
+</button>
+
+</div>
+
+<div class="characterCard">
+
+<img
+id="rightImage"
+style="
+width:300px;
+height:420px;
+object-fit:cover;
+border-radius:16px;
+background:#1f2937;
+">
+
+<button
+id="rightBtn"
+style="
+width:300px;
+margin-top:15px;
+padding:14px;
+font-size:20px;
+cursor:pointer;
+">
+Character B
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+const characters = [
+
+{
+name:"Jon Snow",
+show:"GAME OF THRONES"
+},
+
+{
+name:"Tyrion Lannister",
+show:"GAME OF THRONES"
+},
+
+{
+name:"Daenerys Targaryen",
+show:"GAME OF THRONES"
+},
+
+{
+name:"Walter White",
+show:"BREAKING BAD"
+},
+
+{
+name:"Jesse Pinkman",
+show:"BREAKING BAD"
+},
+
+{
+name:"Rick Grimes",
+show:"THE WALKING DEAD"
+},
+
+{
+name:"Daryl Dixon",
+show:"THE WALKING DEAD"
+},
+
+{
+name:"Ragnar Lothbrok",
+show:"VIKINGS"
+},
+
+{
+name:"Bjorn Ironside",
+show:"VIKINGS"
+}
+
+];
+
+const selectedCharacters =
+characters.filter(
+c => activeShows.includes(c.show)
+);
+
+if(selectedCharacters.length < 2){
+
+alert("Select at least one show with 2 characters");
+
+location.reload();
+
+return;
+
+}
+
+let index = 0;
+
+function firstNameImage(name){
+
+return "characters/" +
+name
+.split(" ")[0]
+.toLowerCase()
+.replace(/[^a-z0-9]/g,"")
++ ".jpg";
+
+}
+
+function showComparison(){
+
+if(index >= selectedCharacters.length-1){
+
+document.body.innerHTML=`
+
+<h1 style="
+text-align:center;
+margin-top:100px;
+">
+Merge Sort Engine Coming Next Step
+</h1>
+
+`;
+
+return;
+
+}
+
+const left =
+selectedCharacters[index];
+
+const right =
+selectedCharacters[index+1];
+
+document.getElementById("progressText")
+.textContent =
+"Test Comparison";
+
+document.getElementById("leftImage")
+.src =
+firstNameImage(left.name);
+
+document.getElementById("rightImage")
+.src =
+firstNameImage(right.name);
+
+document.getElementById("leftBtn")
+.textContent =
+left.name;
+
+document.getElementById("rightBtn")
+.textContent =
+right.name;
+
+document.getElementById("leftBtn")
+.onclick=()=>{
+
+index++;
+
+showComparison();
+
+};
+
+document.getElementById("rightBtn")
+.onclick=()=>{
+
+index++;
+
+showComparison();
+
+};
+
+}
+
+showComparison();
+
+}
 </script>
 
 </body>
