@@ -651,41 +651,6 @@ document.getElementById(
 rightCharacter.name;
 
 }
-  
-if(index >= selectedCharacters.length-1){
-
-document.body.innerHTML=`
-
-<h1 style="
-text-align:center;
-margin-top:100px;
-">
-Merge Sort Engine Coming Next Step
-</h1>
-
-`;
-
-return;
-
-}
-
-const left =
-selectedCharacters[index];
-
-const right =
-selectedCharacters[index+1];
-
-document.getElementById("progressText")
-.textContent =
-"Test Comparison";
-
-document.getElementById("leftImage")
-.src =
-firstNameImage(left.name);
-
-document.getElementById("rightImage")
-.src =
-firstNameImage(right.name);
 
 document.getElementById(
 "leftBtn"
